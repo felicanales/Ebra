@@ -60,9 +60,10 @@ export async function getProductCosting(req: Request, res: Response) {
     `
     SELECT
       ac.id,
-      ac.period_start,
-      ac.period_end,
-      ac.channel,
+      ac.campaign_name,
+      ac.social_network,
+      ac.campaign_start,
+      ac.campaign_end,
       ac.amount,
       ac.notes,
       COALESCE(pb.total_produced, 0) AS total_produced
@@ -71,10 +72,10 @@ export async function getProductCosting(req: Request, res: Response) {
       SELECT SUM(quantity_produced) AS total_produced
       FROM production_batches
       WHERE product_id = ac.product_id
-        AND created_at::date BETWEEN ac.period_start AND ac.period_end
+        AND created_at::date BETWEEN ac.campaign_start AND ac.campaign_end
     ) pb ON true
     WHERE ac.product_id = $1
-    ORDER BY ac.period_start DESC
+    ORDER BY ac.campaign_start DESC
     `,
     [productId]
   );
@@ -86,9 +87,10 @@ export async function getProductCosting(req: Request, res: Response) {
 
     return {
       id: row.id,
-      period_start: row.period_start,
-      period_end: row.period_end,
-      channel: row.channel,
+      campaign_name: row.campaign_name,
+      social_network: row.social_network,
+      campaign_start: row.campaign_start,
+      campaign_end: row.campaign_end,
       amount,
       total_produced: totalProduced,
       allocated_per_unit: allocatedPerUnit,

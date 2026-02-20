@@ -83,14 +83,15 @@ CREATE TABLE IF NOT EXISTS production_consumptions (
 
 CREATE TABLE IF NOT EXISTS ad_costs (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  period_start date NOT NULL,
-  period_end date NOT NULL,
-  channel text,
+  campaign_name text NOT NULL,
+  social_network text NOT NULL CHECK (social_network IN ('instagram')),
+  campaign_start date NOT NULL,
+  campaign_end date NOT NULL,
   amount numeric NOT NULL CHECK (amount >= 0),
   notes text,
   product_id uuid REFERENCES products(id),
   created_at timestamptz NOT NULL DEFAULT now(),
-  CHECK (period_end >= period_start)
+  CHECK (campaign_end >= campaign_start)
 );
 
 CREATE TABLE IF NOT EXISTS pricing_snapshots (
@@ -112,4 +113,4 @@ CREATE INDEX IF NOT EXISTS idx_inventory_location ON inventory_movements (locati
 CREATE INDEX IF NOT EXISTS idx_batches_product ON production_batches (product_id);
 CREATE INDEX IF NOT EXISTS idx_consumptions_batch ON production_consumptions (batch_id);
 CREATE INDEX IF NOT EXISTS idx_ad_costs_product ON ad_costs (product_id);
-CREATE INDEX IF NOT EXISTS idx_ad_costs_period ON ad_costs (period_start, period_end);
+CREATE INDEX IF NOT EXISTS idx_ad_costs_period ON ad_costs (campaign_start, campaign_end);

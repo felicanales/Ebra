@@ -34,7 +34,7 @@ export async function getDashboardKpis(req: Request, res: Response) {
     `
     SELECT COALESCE(SUM(amount), 0) AS total
     FROM ad_costs
-    WHERE period_end >= (CURRENT_DATE - INTERVAL '30 days')
+    WHERE campaign_end >= (CURRENT_DATE - INTERVAL '30 days')
     `
   );
 
