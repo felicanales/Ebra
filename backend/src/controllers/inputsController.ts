@@ -12,10 +12,28 @@ export async function getInputs(req: Request, res: Response) {
   const onlyActive = req.query.active !== "false";
   const result = await pool.query(
     `
-    SELECT id, sku, name, unit, is_critical, reorder_point, active, created_at
-    FROM inputs
-    WHERE ($1::boolean IS FALSE OR active = true)
-    ORDER BY created_at DESC
+    SELECT
+      i.id,
+      i.sku,
+      i.name,
+      i.unit,
+      i.is_critical,
+      i.reorder_point,
+      i.active,
+      i.created_at,
+      ic.cost_per_unit,
+      ic.currency,
+      ic.valid_from
+    FROM inputs i
+    LEFT JOIN LATERAL (
+      SELECT cost_per_unit, currency, valid_from
+      FROM input_costs
+      WHERE input_id = i.id
+      ORDER BY valid_from DESC, created_at DESC
+      LIMIT 1
+    ) ic ON true
+    WHERE ($1::boolean IS FALSE OR i.active = true)
+    ORDER BY i.created_at DESC
     `,
     [onlyActive]
   );

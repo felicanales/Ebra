@@ -1,5 +1,6 @@
 ﻿import dotenv from "dotenv";
 import express from "express";
+import cors from "cors";
 import { healthRouter } from "./routes/health";
 import { inputsRouter } from "./routes/inputs";
 import { productsRouter } from "./routes/products";
@@ -11,6 +12,11 @@ dotenv.config();
 
 const app = express();
 
+app.use(
+  cors({
+    origin: "*",
+  })
+);
 app.use(express.json());
 
 app.use("/health", healthRouter);

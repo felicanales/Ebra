@@ -127,7 +127,12 @@ export async function upsertBom(req: Request, res: Response) {
       productId,
     ]);
 
-    for (const item of items) {
+    if (items.length > 0) {
+      const inputIds = items.map((item) => item.input_id);
+      const quantities = items.map((item) => item.quantity_per_unit);
+      const wastageRates = items.map((item) => item.wastage_rate ?? 0);
+      const notes = items.map((item) => item.notes ?? null);
+
       await client.query(
         `
         INSERT INTO product_bom (
@@ -137,15 +142,20 @@ export async function upsertBom(req: Request, res: Response) {
           wastage_rate,
           notes
         )
-        VALUES ($1, $2, $3, COALESCE($4, 0), $5)
+        SELECT
+          $1,
+          input_id,
+          quantity_per_unit,
+          wastage_rate,
+          notes
+        FROM UNNEST(
+          $2::uuid[],
+          $3::numeric[],
+          $4::numeric[],
+          $5::text[]
+        ) AS t(input_id, quantity_per_unit, wastage_rate, notes)
         `,
-        [
-          productId,
-          item.input_id,
-          item.quantity_per_unit,
-          item.wastage_rate ?? 0,
-          item.notes ?? null,
-        ]
+        [productId, inputIds, quantities, wastageRates, notes]
       );
     }
 
